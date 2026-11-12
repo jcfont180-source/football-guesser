@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b3b2a">
+<title>Football Guesser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- HOME -->
+  <section id="screen-home" class="screen is-active" aria-label="Home">
+    <header class="hero">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 64 64" class="ball"><circle cx="32" cy="32" r="30" fill="#fff"/><path d="M32 18l10 7-4 12H26l-4-12z" fill="#111"/><path d="M32 2v16M42 25l15-6M38 37l9 14M26 37l-9 14M22 25L7 19" stroke="#111" stroke-width="2.5" fill="none"/><circle cx="32" cy="32" r="30" fill="none" stroke="#111" stroke-width="2"/></svg>
+      </div>
+      <h1 class="title">Football <span>Guesser</span></h1>
+      <p class="tagline">One photo. Guess the season, both teams and the competition.</p>
+    </header>
+
+    <div class="modes">
+      <button class="mode-card mode-daily" id="btn-daily" type="button">
+        <span class="mode-kicker">Daily challenge</span>
+        <span class="mode-name" id="daily-date">Today</span>
+        <span class="mode-desc" id="daily-desc">5 moments · the same for everyone today</span>
+        <span class="mode-cta" id="daily-cta">Play</span>
+      </button>
+      <button class="mode-card mode-endless" id="btn-endless" type="button">
+        <span class="mode-kicker">Endless</span>
+        <span class="mode-name">Random games</span>
+        <span class="mode-desc">New 5-round game every time. Play as many as you like.</span>
+        <span class="mode-cta">Play</span>
+      </button>
+    </div>
+
+    <div class="stats" id="home-stats">
+      <div class="stat"><span class="stat-num" id="stat-best">–</span><span class="stat-label">Personal best</span></div>
+      <div class="stat"><span class="stat-num" id="stat-played">0</span><span class="stat-label">Games played</span></div>
+      <div class="stat"><span class="stat-num" id="stat-pool">0</span><span class="stat-label">Moments</span></div>
+    </div>
+
+    <details class="howto">
+      <summary>How to play</summary>
+      <ul>
+        <li>Each game is <b>5 rounds</b>. Every round shows one photo of a famous moment.</li>
+        <li><b>Season</b>, up to 1,000 points. Exact is 1,000, one year off about 700, three off about 300, ten or more off 0. Club seasons count by the year they ended (1998–99 = 1999). International matches use their calendar year.</li>
+        <li><b>Teams</b>, 500 points per correct team, in either order.</li>
+        <li><b>Competition</b>, 1,000 points if exact, or 400 for the right kind (e.g. another continental club cup).</li>
+        <li>The photo starts <b>zoomed in</b>. <b>Zoom out</b> or <b>Reveal decade</b> each cost 20% of that round's score.</li>
+      </ul>
+    </details>
+    <p class="footnote">Photos: Wikimedia Commons contributors and other sources. See manifest.json.</p>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen" aria-label="Game">
+    <div class="topbar">
+      <button class="icon-btn" id="btn-home" type="button" aria-label="Back to home">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="topbar-mid">
+        <span class="mode-pill" id="mode-pill">Daily</span>
+        <ol class="round-dots" id="round-dots" aria-label="Rounds"></ol>
+      </div>
+      <div class="scorebox" aria-live="polite"><span class="scorebox-label">Score</span><span class="scorebox-num" id="total-score">0</span></div>
+    </div>
+
+    <div class="play">
+      <figure class="photo" id="photo">
+        <div class="photo-bg" id="photo-bg"></div>
+        <img id="photo-img" alt="Mystery football moment" draggable="false">
+        <div class="photo-chips">
+          <span class="chip chip-zoom" id="chip-zoom">🔍 Zoomed in</span>
+          <span class="chip chip-decade" id="chip-decade" hidden></span>
+        </div>
+        <div class="photo-round" id="photo-round">Round 1</div>
+      </figure>
+
+      <div class="panel">
+        <!-- guess form -->
+        <form class="guess" id="guess-form" autocomplete="off" novalidate>
+          <div class="field">
+            <div class="field-head">
+              <label for="season" class="field-label">Season</label>
+              <span class="field-max">1,000</span>
+            </div>
+            <div class="season-readout">
+              <output id="season-out" for="season">1987–88</output>
+              <span id="season-sub">or the year 1988</span>
+            </div>
+            <div class="slider-wrap">
+              <div class="decade-band" id="decade-band" hidden></div>
+              <input type="range" id="season" min="1950" max="2026" step="1" value="1988" aria-label="Season (year it ended)">
+            </div>
+            <div class="slider-ticks" aria-hidden="true"><span>1950</span><span>1970</span><span>1990</span><span>2010</span><span>2026</span></div>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-label">Teams</span>
+              <span class="field-max">500 + 500</span>
+            </div>
+            <div class="teams">
+              <div class="ac" data-source="teams"><input id="team1" type="text" placeholder="Team" aria-label="First team" spellcheck="false" autocapitalize="words"></div>
+              <span class="vs">vs</span>
+              <div class="ac" data-source="teams"><input id="team2" type="text" placeholder="Team" aria-label="Second team" spellcheck="false" autocapitalize="words"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <label for="comp" class="field-label">Competition</label>
+              <span class="field-max">1,000</span>
+            </div>
+            <div class="ac" data-source="comps"><input id="comp" type="text" placeholder="e.g. FIFA World Cup" spellcheck="false"></div>
+          </div>
+
+          <div class="hints">
+            <button type="button" class="hint-btn" id="hint-zoom"><span class="hint-ico">🔍</span><span>Zoom out</span><span class="hint-cost">−20%</span></button>
+            <button type="button" class="hint-btn" id="hint-decade"><span class="hint-ico">📅</span><span>Reveal decade</span><span class="hint-cost">−20%</span></button>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btn-guess">Lock in guess <span class="worth" id="worth">· worth up to 3,000</span></button>
+        </form>
+
+        <!-- reveal -->
+        <div class="reveal" id="reveal" hidden>
+          <div class="reveal-total">
+            <span class="reveal-total-label">Round score</span>
+            <span class="reveal-total-num" id="r-total">0</span>
+            <span class="reveal-total-max">/ 3,000</span>
+          </div>
+          <ul class="breakdown" id="breakdown"></ul>
+          <article class="moment">
+            <h2 class="moment-title" id="m-title"></h2>
+            <p class="moment-score" id="m-score"></p>
+            <dl class="moment-facts">
+              <div><dt>Competition</dt><dd id="m-comp"></dd></div>
+              <div><dt>Date</dt><dd id="m-date"></dd></div>
+              <div><dt>Venue</dt><dd id="m-venue"></dd></div>
+            </dl>
+            <p class="moment-story" id="m-story"></p>
+          </article>
+          <button type="button" class="btn-primary" id="btn-next">Next round</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen" aria-label="Results">
+    <div class="end-card">
+      <p class="end-kicker" id="end-kicker">Daily challenge</p>
+      <div class="end-total"><span id="end-total">0</span><small>/ 15,000</small></div>
+      <p class="end-verdict" id="end-verdict"></p>
+      <div class="end-best" id="end-best"></div>
+      <ol class="end-rounds" id="end-rounds"></ol>
+      <pre class="share-preview" id="share-preview"></pre>
+      <div class="end-actions">
+        <button type="button" class="btn-primary" id="btn-copy">Copy result</button>
+        <button type="button" class="btn-secondary" id="btn-again">Play endless</button>
+        <button type="button" class="btn-ghost" id="btn-end-home">Home</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script src="data.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
